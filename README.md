@@ -19,14 +19,22 @@ The demostration allow you to see:
 ## Steps to reproduce the demo
 
 ### Pre-requisites
-* Create and IoT thing and donwload the certificates, incluiding the Ammazon Root CA 1.
+* Create and IoT thing for the Robot and donwload the certificates.
 * Create a policy that have permisions to Publish to robot/location and Subscribe to robot/move/+
 
 ### 1. Create RoboMaker development environment and upload this code
+* Go to the AWS RoboMaker console and create a new development environment, selection a VPC and subnet that has acces to Internet resources.
+* When the environment is ready create folder in the root (in my case robomakeriot), and upload the source of this github repo.
 
 ### 2. Upload the certificates of the device
+* Upload the certificate and private key of the Robot (thing) to the folder robomakeriot/robot_ws/src/hello_world_robot/certs.
 
-### 3. Modify the IoT endpoint parameter and any other parameter
+### 3. Modify the IoT endpoint and other parameters.
+* Open and edit the file robomakeriot/robot_ws/src/hello_world_robot/launch/rotate.launch
+* Update the parameter iot/endpoint/host with the appropiate endpoint of your IoT Core.
+* Update the parameter iot/certs/certificate with the file name of the certificate of the Robot.
+* Update the parameter iot/certs/private with the file name of the private key of the Robot.
+* Optional: Update any other parameter like the thing_name if you want.
 
 ### 4. Deploy and run the simulation
 

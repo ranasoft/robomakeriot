@@ -36,7 +36,7 @@ The demostration allow you to see:
 * Update the parameter iot/certs/private with the file name of the private key of the Robot.
 * Optional: Update any other parameter like the thing_name if you want.
 
-### 4. Deploy and run the simulation
+### 4. Build, Bundle and Run the simulation
 * Create the Build and Bundle operations, going to the menu Run (besides RoboMaker menu) and select the Add or Edit Configurations...
 * In the "Create New Configuration" window, select "Colcon build", then set the name to something like "robomakeriot Robot", and set the Working directory to "./robomakeriot/robot_ws" (or the root folder name you choose), and click Save.
 * Repeat the operation for the build simulation: In the "Create New Configuration" window, select "Colcon build", then set the name to something like "robomakeriot Simulation", and set the Working directory to "./robomakeriot/simulation_ws" (or the root folder name you choose), and click Save.

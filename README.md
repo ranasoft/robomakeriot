@@ -20,7 +20,7 @@ The demostration allow you to see:
 
 ### Pre-requisites
 * Create and IoT thing for the Robot and donwload the certificates.
-* Create a policy that have permisions to Publish to robot/location and Subscribe to robot/move/+
+* Create a policy that have permisions to Publish to robot/location and Subscribe to robot/move/+, and attach it to the certificate of the Robot (thing).  (Do not forget to enable the certificate).
 
 ### 1. Create RoboMaker development environment and upload this code
 * Go to the AWS RoboMaker console and create a new development environment, selection a VPC and subnet that has acces to Internet resources.
@@ -37,5 +37,10 @@ The demostration allow you to see:
 * Optional: Update any other parameter like the thing_name if you want.
 
 ### 4. Deploy and run the simulation
+* Create the Build and Bundle operations, going to the menu Run (besides RoboMaker menu) and select the Add or Edit Configurations...
+* In the "Create New Configuration" window, select "Colcon build", then set the name to something like "robomakeriot Robot", and set the Working directory to "./robomakeriot/robot_ws" (or the root folder name you choose), and click Save.
+* Repeat the operation for the build simulation: In the "Create New Configuration" window, select "Colcon build", then set the name to something like "robomakeriot Simulation", and set the Working directory to "./robomakeriot/simulation_ws" (or the root folder name you choose), and click Save.
+* Repeat the operation for the bundle robot: In the "Create New Configuration" window, select "Colcon bundle", then set the name to something like "robomakeriot Robot", and set the Working directory to "./robomakeriot/robot_ws" (or the root folder name you choose), and click Save.
+* Repeat the operation for the bundle robot: In the "Create New Configuration" window, select "Colcon bundle", then set the name to something like "robomakeriot Simulation", and set the Working directory to "./robomakeriot/simulation_ws" (or the root folder name you choose), and click Save.
 
 ### 5. Test the different movemenets of the robot

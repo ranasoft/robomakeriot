@@ -30,4 +30,4 @@ The demostration allow you to see:
 
 ### 4. Deploy and run the simulation
 
-## 5. Test the different movemenets of the robot
+### 5. Test the different movemenets of the robot

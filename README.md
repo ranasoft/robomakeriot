@@ -2,7 +2,7 @@
 
 With the growing usage of Robomaker and also IoT, I want to provide this resources as a demo to how to connect a robot to IoT Core using the python AWS IoT Device SDK.
 
-This demo is based on the RoboMaker HelloWorld example described here (https://github.com/aws-robotics/aws-robomaker-sample-application-helloworld)
+This demo is based on the RoboMaker HelloWorld example described [here](https://github.com/aws-robotics/aws-robomaker-sample-application-helloworld)
 
 With some modifications that do the following:
 
@@ -22,7 +22,7 @@ The demostration allow you to see:
 * Create and IoT thing for the Robot and donwload the certificates.
 * Create a policy that have permisions to Publish to robot/location and Subscribe to robot/move/+, and attach it to the certificate of the Robot (thing).  (Do not forget to enable the certificate).
 * VPC, Subnet and Security Group with outbound access to Internet.
-* Create a RoboMaker Application based on the HelloWorld example (https://docs.aws.amazon.com/robomaker/latest/dg/gs-build-rundemo.html).
+* Create a RoboMaker Application based on the [HelloWorld example](https://docs.aws.amazon.com/robomaker/latest/dg/gs-build-rundemo.html).
 
 ### 1. Create RoboMaker development environment and upload this code
 * Go to the AWS RoboMaker console and create a new development environment, selection a VPC and subnet that has acces to Internet resources.

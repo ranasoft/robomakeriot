@@ -1,0 +1,201 @@
+#!/usr/bin/env python
+"""
+ Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ software and associated documentation files (the "Software"), to deal in the Software
+ without restriction, including without limitation the rights to use, copy, modify,
+ merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
+
+
+import sys
+import os
+import rospy
+import json
+import time
+from geometry_msgs.msg import Twist
+# Import SDK packages
+from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
+
+
+class IoTClient():
+    def __init__(self):
+        rospy.loginfo('Initializing IoTClient.')
+        # Get server parameters
+        self.__params = rospy.get_param("~iot")
+        # Init AWSIoTMQTTClient
+        self.__myMQTTClient = AWSIoTMQTTClient(self.__params['thing_name'])
+        rospy.on_shutdown(self._on_shutdown)
+        
+        
+    def connect_and_wait_for_mqtt_messages(self):
+        rospy.loginfo('Connect and wait for MQTT messages.')
+        # Configurations
+        # For TLS mutual authentication
+        self.__myMQTTClient.configureEndpoint(
+            self.__params['endpoint']['host'], 
+            self.__params['endpoint']['port'])
+        self.__myMQTTClient.configureCredentials(
+            self.__params['certs']['root_ca'],
+            self.__params['certs']['private'],
+            self.__params['certs']['certificate'])
+        self.__myMQTTClient.configureConnectDisconnectTimeout(
+            self.__params['connection_time_out'])
+        # Connect
+        self.__myMQTTClient.connect()
+        rospy.loginfo('Client connected using AWSIoTPythonSDK.')
+        # Subscribe to topic
+        self.__myMQTTClient.subscribe(
+            self.__params['topic']['move'], 
+            self.__params['qos'],
+            self._handle_message)
+        self.__cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        
+        
+    def _handle_message(self, client, userdata, message):
+        topic = message.topic
+        payload = str(message.payload)
+        rospy.loginfo(
+            'Message received from topic={} and payload={}'.format(
+                topic,
+                payload))
+        twist = Twist()
+        try:
+            mov = topic.split('/')[2]
+            params = json.loads(payload)
+            rospy.loginfo('Procced to move {}'.format(mov))
+            if mov == 'linear':
+                self._move_linear(params, twist)
+            if mov == 'rotate':
+                self._move_rotate(params, twist)
+            if mov == 'time':
+                self._move_time(params, twist)
+        except (TypeError, ValueError):
+            pass
+    
+    
+    def _on_shutdown(self):
+        rospy.loginfo(
+            'Shuting down robot, procced to unsubscribe to tipoc and disconnect')
+        self.__myMQTTClient.unsubscribe(self.__params['topic']['move'])
+        self.__myMQTTClient.disconnect()
+       
+        
+    def _move_linear(self, params, twist):
+        if 'x' in params and 'speed' in params and 'direction' in params:
+            speed = float(params['speed'])
+            if(params['direction'] == 'forward'):
+                twist.linear.x = abs(speed)
+            if(params['direction'] == 'back'):
+                twist.linear.x = -abs(speed)
+            distance = float(params['x'])
+            #Since we are moving just in x-axis
+            twist.linear.y = 0
+            twist.linear.z = 0
+            twist.angular.x = 0
+            twist.angular.y = 0
+            twist.angular.z = 0
+            #Setting the current time for distance calculus
+            t0 = rospy.Time.now().to_sec()
+            current_distance = 0
+            #Loop to move the turtle in an specified distance
+            while(current_distance < distance):
+                #Publish the velocity
+                self._publish_twist(twist)
+                #Takes actual time to velocity calculus
+                t1=rospy.Time.now().to_sec()
+                #Calculates distancePoseStamped
+                current_distance= speed*(t1-t0)
+            # After movement stop the robot
+            twist.linear.x = 0
+            self._publish_twist(twist)
+            rospy.loginfo('Stop moving.')
+    
+    
+    def _move_time(self, params, twist):
+        if 'x' in params and 'z' in params and 'sec' in params:
+            start_time = time.time()
+            d = float(params['sec'])
+            rate = 10
+            r = rospy.Rate(rate)
+            while time.time() - start_time < d:
+                twist.linear.x = float(params['x'])
+                twist.angular.z = float(params['z'])
+                self._publish_twist(twist)
+                r.sleep()
+            # After movement stop the robot
+            twist.linear.x = 0.0
+            twist.angular.z = 0.0
+            self._publish_twist(twist)
+            rospy.loginfo('Stop moving.')
+                
+    
+    def _move_rotate(self, params, twist):
+        if 'direction' in params and 'speed' in params:
+            speed = float(params['speed'])
+            #Converting from angles to radians
+            PI = 3.1415926535897
+            angular_speed = speed*2*PI/360
+            relative_angle = 90*2*PI/360
+            #We wont use linear components
+            twist.linear.x=0
+            twist.linear.y=0
+            twist.linear.z=0
+            twist.angular.x = 0
+            twist.angular.y = 0
+            # Checking if our movement is CW or CCW
+            if params['direction'] == 'right':
+                twist.angular.z = -abs(angular_speed)
+            else:
+                twist.angular.z = abs(angular_speed)
+            # Setting the current time for distance calculus
+            t0 = rospy.Time.now().to_sec()
+            current_angle = 0
+            while(current_angle < relative_angle):
+                self._publish_twist(twist)
+                t1 = rospy.Time.now().to_sec()
+                current_angle = angular_speed*(t1-t0)
+            # After movement stop the robot
+            twist.angular.z = 0
+            self._publish_twist(twist)
+            rospy.loginfo('Stop moving.')
+            
+    
+    def _publish_twist(self, twist):
+        self.__cmd_pub.publish(twist)
+        msg = {
+            'linear': {
+                'x': twist.linear.x,
+                'y': twist.linear.y,
+                'z': twist.linear.z
+            },
+            'angular': {
+                'x': twist.angular.x,
+                'y': twist.angular.y,
+                'z': twist.angular.z
+            }
+        }
+        self.__myMQTTClient.publish(
+            self.__params['topic']['location'],
+            json.dumps(msg),
+            self.__params['qos'])
+        rospy.loginfo('MQTT message published payload={}'.format(json.dumps(msg)))
+    
+
+def main():
+    rospy.init_node('rotate')
+    client = IoTClient()
+    client.connect_and_wait_for_mqtt_messages()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

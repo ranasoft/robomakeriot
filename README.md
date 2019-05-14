@@ -40,7 +40,7 @@ The demostration allow you to see:
 
 ### 5. Test the different movemenets of the robot
 * Go to the Simulation Job and open Gazebo, and check that the robot is not moving.
-* Go to IoT Core and using the Test console publish the following message to test 3 different interactions:
+* Go to IoT Core and using the Test console publish the following message to test 2 different interactions:
 1. Linear Move Forward or Back
 ```
 Topic: robot/move/linear
@@ -59,13 +59,3 @@ Topic: robot/move/rotate
     "speed": 90
 }
 ```
-3. Free movemement based on distance, rotation and time:
-```
-Topic: robot/move/time
-{
-    "x": 0.1,
-    "z": 0.5,
-    "sec": 7
-}
-```
-You can see on Gazebo that the Robot is moving based on the IoT Messages definition.

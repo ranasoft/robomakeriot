@@ -38,7 +38,7 @@ The demostration allow you to see:
 * Create a Build and Bundle configuration for the Robot and the Simulation.
 * Launch the Simulation, to do this you can 1)Create a Simulation Configuration, using the IAM role, bucket from the RoboMaker Simulation Job was generated in your pre-required Robot Application.  Additionally set the name of the Security Group and Subnet mentioned in the pre-requisites; or 2) Clone the HelloWorld Simulation Job, connect and restart the simulation with the new bundles; or 3) Copy & paste the bundle packages to the S3 bucket used in the Simulation Job and clone it.
 
-### 5. Test the different movemenets of the robot
+### 5. Test the different movemenets of the robot.
 * Go to the Simulation Job and open Gazebo, and check that the robot is not moving.
 * Go to IoT Core and using the Test console publish the following message to test 2 different interactions:
 1. Linear Move Forward or Back
